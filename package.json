@@ -17,5 +17,14 @@
     "example"
   ],
   "author": "Ekaitz <ekaitz@elenq.tech>",
-  "license": "AGPL-3.0-or-later"
+  "license": "AGPL-3.0-or-later",
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "express": "^4.19.2",
+    "nunjucks": "^3.2.4",
+    "sqlite3": "^5.1.7"
+  }
 }
