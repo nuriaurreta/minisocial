@@ -1,0 +1,21 @@
+{
+  "name": "minisocial",
+  "version": "1.0.0",
+  "description": "A mini social network for learning",
+  "main": "app.js",
+  "type": "module",
+  "scripts": {
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://codeberg.org/ekaitz-zarraga/minisocial"
+  },
+  "keywords": [
+    "social",
+    "network",
+    "example"
+  ],
+  "author": "Ekaitz <ekaitz@elenq.tech>",
+  "license": "AGPL-3.0-or-later"
+}
