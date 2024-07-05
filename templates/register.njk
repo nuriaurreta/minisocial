@@ -1,0 +1,33 @@
+{% extends "base.njk" %}
+
+{% block title %}Register{% endblock title %}
+
+{% block body %}
+    <form action="/register" method="POST">
+        <div>
+            <label for="name">Name</label>
+            <input name="name" type="text">
+        </div>
+        <div>
+            <label for="surname">Surname</label>
+            <input name="surname" type="text">
+        </div>
+        <div>
+            <label for="email">Email</label>
+            <input name="email" type="text">
+        </div>
+        <div>
+            <label for="username">Username</label>
+            <input name="username" type="text">
+        </div>
+        <div>
+            <label for="password">Password</label>
+            <input name="password" type="password">
+        </div>
+        <div>
+            <label for="repeat-password">Repeat Password</label>
+            <input name="repeat-password" type="password">
+        </div>
+        <button type="submit">REGISTER</button>
+    </form>
+{% endblock body %}
