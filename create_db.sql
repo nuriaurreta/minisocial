@@ -3,7 +3,7 @@ CREATE TABLE users (
     name TEXT,
     last_name TEXT,
     password TEXT,
-    email TEXT
+    email TEXT UNIQUE
 );
 
 CREATE TABLE posts (
