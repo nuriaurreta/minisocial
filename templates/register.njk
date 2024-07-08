@@ -3,6 +3,11 @@
 {% block title %}Register{% endblock title %}
 
 {% block body %}
+    {%if message%}
+    <p>
+        {{message}}
+    </p>
+    {%endif%}
     <form action="/register" method="POST">
         <div>
             <label for="name">Name</label>

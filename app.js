@@ -1,6 +1,8 @@
 import express from "express";
 import nunjucks from "nunjucks";
-import sqlite3 from "sqlite3";
+import * as Passwords from "./lib/password.js";
+
+import {createUser} from "./lib/db.js"
 
 let PORT = 3000;
 let app = express();
@@ -12,9 +14,6 @@ nunjucks.configure('templates', {
 // For parsing application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true }))
 
-// Database connection
-let db = new sqlite3.Database('database.db');
-
 // Routes
 app.get("/login", (req, res)=>{
     res.render("login.njk");
@@ -23,15 +22,21 @@ app.get("/login", (req, res)=>{
 app.get("/register", (req, res)=>{
     res.render("register.njk");
 });
-app.post("/register", (req, res)=>{
-    console.log(req.body);
-    db.run("INSERT INTO users (name, last_name, password, email) VALUES (?,?,?,?)",
-        [req.body.name, req.body.surname, req.body.password, req.body.email],
-        function (error){
-            if(error){ throw error; }
-            res.send("Row inserted!");
-        }
-    );
+app.post("/register", async (req, res)=>{
+    if(req.body.password !== req.body["repeat-password"]){
+        res.render("register.njk", {message: "Passwords do not match"});
+        return;
+    }
+    try{
+        let salt = await Passwords.genSalt(10);
+        let hashedPass = await Passwords.hash(req.body.password, salt);
+        req.body.password = hashedPass;
+        await createUser(req.body);
+        // TODO: Registered properly, what should I do now??
+        res.render("/unaPlantilla.njk");
+    } catch (error){
+        console.log(error);
+    }
 });
 
 app.listen(PORT, ()=>{
