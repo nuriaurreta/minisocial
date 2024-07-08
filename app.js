@@ -1,8 +1,7 @@
 import express from "express";
 import nunjucks from "nunjucks";
 import * as Passwords from "./lib/password.js";
-
-import {createUser} from "./lib/db.js"
+import * as Db from "./lib/db.js"
 
 let PORT = 3000;
 let app = express();
@@ -18,6 +17,16 @@ app.use(express.urlencoded({ extended: true }))
 app.get("/login", (req, res)=>{
     res.render("login.njk");
 });
+app.post("/login", async (req, res)=>{
+    let user = await Db.getUserByEmail(req.body.email);
+    if( user && await Passwords.compare(req.body.password, user.password) ){
+        // logged in successfully
+        console.log("logged in successfully");
+        res.redirect("/home");
+    } else {
+        res.render("login.njk", {message: "Wrong credentials"});
+    }
+})
 
 app.get("/register", (req, res)=>{
     res.render("register.njk");
