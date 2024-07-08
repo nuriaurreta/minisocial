@@ -6,6 +6,8 @@ import * as Db from "./lib/db.js"
 
 let PORT = 3000;
 let app = express();
+
+// Configure template system
 nunjucks.configure('templates', {
     express: app,
     autoescape: true,   // Escape dangerous strings
