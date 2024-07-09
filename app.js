@@ -2,7 +2,8 @@ import express from "express";
 import nunjucks from "nunjucks";
 import session from "express-session";
 import * as Passwords from "./lib/password.js";
-import * as Db from "./lib/db.js"
+import * as Db from "./lib/db.js";
+import csurf from "csurf";
 
 let PORT = 3000;
 let app = express();
@@ -17,11 +18,17 @@ nunjucks.configure('templates', {
 // Minimal session storage (it's bad, use something better later)
 app.use(session({
   secret: 'this should be a proper secret',
-  cookie: { maxAge: 60000 }
+  cookie: {
+    maxAge: 60000,
+    // sameSite: "strict", // SameSite attribute in cookies mitigate CSRF
+  }
 }));
 
 // For parsing application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true }))
+
+// For CSRF mitigation
+app.use(csurf("This also should be a secret!!!!", ["POST"]));
 
 // Routes
 app.get("/home", (req, res)=>{
@@ -40,9 +47,11 @@ app.get("/logout", (req, res)=>{
 });
 
 app.get("/login", (req, res)=>{
-    res.render("login.njk");
+    const csrfToken = req.csrfToken();
+    res.render("login.njk", {csrfToken});
 });
 app.post("/login", async (req, res)=>{
+    const csrfToken = req.csrfToken();
     let user = await Db.getUserByEmail(req.body.email);
     if( user && await Passwords.compare(req.body.password, user.password) ){
         // logged in successfully
@@ -50,16 +59,17 @@ app.post("/login", async (req, res)=>{
         console.log("logged in successfully");
         res.redirect("/home");
     } else {
-        res.render("login.njk", {message: "Wrong credentials"});
+        res.status(400).render("login.njk", {message: "Wrong credentials", csrfToken});
     }
 })
 
 app.get("/register", (req, res)=>{
-    res.render("register.njk");
+    const csrfToken = req.csrfToken();
+    res.render("register.njk", {csrfToken});
 });
 app.post("/register", async (req, res)=>{
     if(req.body.password !== req.body["repeat-password"]){
-        res.render("register.njk", {message: "Passwords do not match"});
+        res.status(400).render("register.njk", {message: "Passwords do not match"});
         return;
     }
     try{
@@ -70,7 +80,9 @@ app.post("/register", async (req, res)=>{
         // TODO: Registered properly, what should I do now??
         res.render("/unaPlantilla.njk");
     } catch (error){
-        console.log(error);
+        // Error, try again
+        const csrfToken = req.csrfToken();
+        res.status(400).render("register.njk", {message: 'Some error happened', csrfToken});
     }
 });
 
