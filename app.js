@@ -66,7 +66,7 @@ app.post("/register", async (req, res)=>{
         let salt = await Passwords.genSalt(10);
         let hashedPass = await Passwords.hash(req.body.password, salt);
         req.body.password = hashedPass;
-        await createUser(req.body);
+        await Db.createUser(req.body);
         // TODO: Registered properly, what should I do now??
         res.render("/unaPlantilla.njk");
     } catch (error){
