@@ -31,6 +31,13 @@ app.use(express.urlencoded({ extended: true }))
 app.use(csurf("This also should be a secret!!!!", ["POST"]));
 
 // Routes
+app.get("/", (req, res)=>{
+    if(req.session.user_id !== undefined){
+        res.redirect("/home");
+    } else {
+        res.redirect("/login");
+    }
+});
 app.get("/home", (req, res)=>{
     if(req.session.user_id !== undefined){
         // is logged
