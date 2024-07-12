@@ -38,11 +38,13 @@ app.get("/", (req, res)=>{
         res.redirect("/login");
     }
 });
-app.get("/home", (req, res)=>{
+app.get("/home", async (req, res)=>{
     if(req.session.user_id !== undefined){
         // is logged
-        // TODO: render the posts of the people I follow
-        res.render("home.njk");
+        let posts = await Db.getFollowedPosts(req.session.user_id);
+        console.log(posts);
+        let csrfToken = req.csrfToken();
+        res.render("home.njk", {posts, csrfToken});
     } else {
         res.redirect("/login");
     }
@@ -124,6 +126,16 @@ app.post("/register", async (req, res)=>{
         // Error, try again
         const csrfToken = req.csrfToken();
         res.status(400).render("register.njk", {message: 'Some error happened', csrfToken});
+    }
+});
+
+app.post("/shout", async (req, res)=>{
+    if(req.session.user_id !== undefined){
+        // is logged
+        Db.createPost(req.body.shout_body, req.session.user_id);
+        res.redirect("/home");
+    } else {
+        res.status(401).send("You have no power here");
     }
 });
 
