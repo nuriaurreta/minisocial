@@ -41,6 +41,39 @@ app.get("/home", (req, res)=>{
     }
 });
 
+app.get("/users", async (req, res)=>{
+    if(req.session.user_id !== undefined){
+        // is logged
+        let users = await Db.getUsers();
+        let followed = await Db.getFollowed(req.session.user_id);
+        let isFollowed = (user, follows)=>{
+            return follows.find((el)=> el.followeD_id == user.user_id );
+        }
+        res.render("users.njk", {users, followed, isFollowed});
+    } else {
+        res.redirect("/login");
+    }
+});
+
+app.get("/follow/:followed_id", async(req, res)=>{
+    if(req.session.user_id !== undefined){
+        // is logged
+        await Db.follow(req.session.user_id, req.params.followed_id);
+        res.redirect("/users");
+    } else {
+        res.redirect("/login");
+    } 
+});
+app.get("/unfollow/:followed_id", async(req, res)=>{
+    if(req.session.user_id !== undefined){
+        // is logged
+        await Db.unfollow(req.session.user_id, req.params.followed_id);
+        res.redirect("/users");
+    } else {
+        res.redirect("/login");
+    } 
+})
+
 app.get("/logout", (req, res)=>{
     req.session.user_id = undefined;
     res.redirect("/login");
@@ -76,9 +109,10 @@ app.post("/register", async (req, res)=>{
         let salt = await Passwords.genSalt(10);
         let hashedPass = await Passwords.hash(req.body.password, salt);
         req.body.password = hashedPass;
-        await Db.createUser(req.body);
-        // TODO: Registered properly, what should I do now??
-        res.render("/unaPlantilla.njk");
+        let user_id = await Db.createUser(req.body);
+        // I know the user so I can set the session now
+        req.session.user_id = user_id;
+        res.redirect("/home");
     } catch (error){
         // Error, try again
         const csrfToken = req.csrfToken();

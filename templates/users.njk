@@ -1,0 +1,18 @@
+{% extends "base.njk" %}
+
+{% block title %}Users{% endblock title %}
+
+{% block body %}
+
+{% for user in users %}
+<article>
+    {{user.name}}
+    {% if isFollowed(user, followed) %}
+    <a href="/unfollow/{{user.user_id}}">Dejar de seguir</a>
+    {%else%}
+    <a href="/follow/{{user.user_id}}">Seguir</a>
+    {%endif%}
+</article>
+{% endfor %}
+
+{% endblock body %}
