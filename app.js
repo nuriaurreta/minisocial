@@ -30,57 +30,42 @@ app.use(express.urlencoded({ extended: true }))
 // For CSRF mitigation
 app.use(csurf("This also should be a secret!!!!", ["POST"]));
 
+// Middleware
+function protectedByLogin(req, res, next){
+    if(req.session.user_id !== undefined){
+        next();
+    } else {
+        res.redirect("/login");
+    } 
+}
+
 // Routes
-app.get("/", (req, res)=>{
-    if(req.session.user_id !== undefined){
-        res.redirect("/home");
-    } else {
-        res.redirect("/login");
-    }
+app.get("/", protectedByLogin, (req, res)=>{
+    res.redirect("/home");
 });
-app.get("/home", async (req, res)=>{
-    if(req.session.user_id !== undefined){
-        // is logged
-        let posts = await Db.getFollowedPosts(req.session.user_id);
-        console.log(posts);
-        let csrfToken = req.csrfToken();
-        res.render("home.njk", {posts, csrfToken});
-    } else {
-        res.redirect("/login");
-    }
+app.get("/home", protectedByLogin, async (req, res)=>{
+    let posts = await Db.getFollowedPosts(req.session.user_id);
+    console.log(posts);
+    let csrfToken = req.csrfToken();
+    res.render("home.njk", {posts, csrfToken});
 });
 
-app.get("/users", async (req, res)=>{
-    if(req.session.user_id !== undefined){
-        // is logged
-        let users = await Db.getUsers();
-        let followed = await Db.getFollowed(req.session.user_id);
-        let isFollowed = (user, follows)=>{
-            return follows.find((el)=> el.followeD_id == user.user_id );
-        }
-        res.render("users.njk", {users, followed, isFollowed});
-    } else {
-        res.redirect("/login");
+app.get("/users", protectedByLogin, async (req, res)=>{
+    let users = await Db.getUsers();
+    let followed = await Db.getFollowed(req.session.user_id);
+    let isFollowed = (user, follows)=>{
+        return follows.find((el)=> el.followeD_id == user.user_id );
     }
+    res.render("users.njk", {users, followed, isFollowed});
 });
 
-app.get("/follow/:followed_id", async(req, res)=>{
-    if(req.session.user_id !== undefined){
-        // is logged
-        await Db.follow(req.session.user_id, req.params.followed_id);
-        res.redirect("/users");
-    } else {
-        res.redirect("/login");
-    } 
+app.get("/follow/:followed_id", protectedByLogin, async(req, res)=>{
+    await Db.follow(req.session.user_id, req.params.followed_id);
+    res.redirect("/users");
 });
-app.get("/unfollow/:followed_id", async(req, res)=>{
-    if(req.session.user_id !== undefined){
-        // is logged
-        await Db.unfollow(req.session.user_id, req.params.followed_id);
-        res.redirect("/users");
-    } else {
-        res.redirect("/login");
-    } 
+app.get("/unfollow/:followed_id", protectedByLogin, async(req, res)=>{
+    await Db.unfollow(req.session.user_id, req.params.followed_id);
+    res.redirect("/users");
 })
 
 app.get("/logout", (req, res)=>{
@@ -129,14 +114,9 @@ app.post("/register", async (req, res)=>{
     }
 });
 
-app.post("/shout", async (req, res)=>{
-    if(req.session.user_id !== undefined){
-        // is logged
-        Db.createPost(req.body.shout_body, req.session.user_id);
-        res.redirect("/home");
-    } else {
-        res.status(401).send("You have no power here");
-    }
+app.post("/shout", protectedByLogin, async (req, res)=>{
+    Db.createPost(req.body.shout_body, req.session.user_id);
+    res.redirect("/home");
 });
 
 app.listen(PORT, ()=>{
