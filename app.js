@@ -119,6 +119,21 @@ app.post("/shout", protectedByLogin, async (req, res)=>{
     res.redirect("/home");
 });
 
-app.listen(PORT, ()=>{
+const server = app.listen(PORT, ()=>{
     console.log("listening in port", PORT);
 });
+
+
+function shutdown() {
+    console.log('Shutdown signal caught, shutting down');
+    let dbEnd = Db.close();
+    let serverEnd = new Promise((resolve, reject)=>{
+        server.close(() => {
+            console.log('HTTP server closed')
+            resolve();
+        });
+    });
+    Promise.all([dbEnd, serverEnd]).then(()=>process.exit());
+}
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);
