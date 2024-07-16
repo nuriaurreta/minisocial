@@ -4,9 +4,16 @@ import session from "express-session";
 import * as Passwords from "./lib/password.js";
 import * as Db from "./lib/db.js";
 import csurf from "csurf";
+import multer from "multer";
 
 let PORT = 3000;
 let app = express();
+
+// Multipart formdata
+const upload = multer({
+    dest: 'uploads/',
+    limits: {fileSize: 5*1000*1000}  // PUT LIMITS!!! We don't want to fill our disks!
+ });
 
 // Configure template system
 nunjucks.configure('templates', {
@@ -28,7 +35,7 @@ app.use(session({
 app.use(express.urlencoded({ extended: true }))
 
 // For CSRF mitigation
-app.use(csurf("This also should be a secret!!!!", ["POST"]));
+const csrfMiddleware = csurf("This also should be a secret!!!!", ["POST"]);
 
 // Middleware
 function protectedByLogin(req, res, next){
@@ -40,12 +47,26 @@ function protectedByLogin(req, res, next){
 }
 
 // Routes
+
+// Static file server for the uploads
+app.use('/uploads', express.static('uploads'));
+
+// This route requires multipart-formdata processing before CSRF middleware,
+// assign CSRF middleware manually
+app.post("/shout", protectedByLogin, upload.single('shout_image'), csrfMiddleware, async (req, res)=>{
+    console.log(req.file);
+    Db.createPost(req.body.shout_body, req.file.path, req.session.user_id);
+    res.redirect("/home");
+});
+
+// Apply csrf to the rest of the POST routes
+app.use(csrfMiddleware);
+
 app.get("/", protectedByLogin, (req, res)=>{
     res.redirect("/home");
 });
 app.get("/home", protectedByLogin, async (req, res)=>{
     let posts = await Db.getFollowedPosts(req.session.user_id);
-    console.log(posts);
     let csrfToken = req.csrfToken();
     res.render("home.njk", {posts, csrfToken});
 });
@@ -114,10 +135,7 @@ app.post("/register", async (req, res)=>{
     }
 });
 
-app.post("/shout", protectedByLogin, async (req, res)=>{
-    Db.createPost(req.body.shout_body, req.session.user_id);
-    res.redirect("/home");
-});
+
 
 const server = app.listen(PORT, ()=>{
     console.log("listening in port", PORT);

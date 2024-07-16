@@ -10,6 +10,7 @@ CREATE TABLE posts (
     post_id INTEGER PRIMARY KEY,
     body TEXT,
     user_id INTEGER NOT NULL,
+    image_url TEXT,
     FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
 

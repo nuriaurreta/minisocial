@@ -6,9 +6,10 @@
 <a href="/users">Users</a>
 <a href="/logout">Logout</a>
 
-<form action="/shout" method="POST">
+<form action="/shout" method="POST" enctype="multipart/form-data">
     <input name="_csrf" type="hidden" value={{csrfToken}}>
-    <input type="text" name="shout_body" placeholder="Shout to the world!"></text>
+    <input type="text" name="shout_body" placeholder="Shout to the world!">
+    <input type="file" name="shout_image" accept="image/*">
     <button type="submit">Shout!</button>
 </form>
 
@@ -16,6 +17,7 @@
     {% for post in posts %}
     <article>
         {{post.body}} - {{post.name}}
+        <img src={{post.image_url}}>
     </article>
     {% endfor %}
 </section>
