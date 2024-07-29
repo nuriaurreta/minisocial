@@ -3,9 +3,6 @@
 {% block title %}Home{% endblock title %}
 
 {% block body %}
-<a href="/users">Users</a>
-<a href="/logout">Logout</a>
-
 <form action="/shout" method="POST" enctype="multipart/form-data">
     <input name="_csrf" type="hidden" value={{csrfToken}}>
     <input type="text" name="shout_body" placeholder="Shout to the world!">
