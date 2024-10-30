@@ -10,14 +10,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://codeberg.org/ekaitz-zarraga/minisocial"
+    "url": "https://github.com/nuriaurreta/minisocial"
   },
   "keywords": [
     "social",
     "network",
     "example"
   ],
-  "author": "Ekaitz <ekaitz@elenq.tech>",
+  "author": "Nuria Urreta",
   "license": "AGPL-3.0-or-later",
   "devDependencies": {
     "jest": "^29.7.0",
